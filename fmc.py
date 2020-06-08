@@ -434,7 +434,7 @@ class Candidate:
         text = self.page.get(get_redirect=True)
 
         matches = []
-        for m in re.finditer(ImagesR, text):
+        for m in re.finditer(FilesR, text):
             matches.append(m)
 
         count = len(matches)
@@ -443,10 +443,10 @@ class Candidate:
             # We have several medias, check if they are too small to be counted
             for img in matches:
 
-                if re.search(ImagesThumbR, img.group(0)):
+                if re.search(FilesThumbR, img.group(0)):
                     count -= 1
                 else:
-                    s = re.search(ImagesSizeR, img.group(0))
+                    s = re.search(FilesSizeR, img.group(0))
                     if s and (int(s.group(1)) <= 150):
                         count -= 1
 
@@ -564,7 +564,7 @@ class Candidate:
         )
 
         if not pywikibot.Page(G_Site, self._fileName).exists():
-            match = re.search(ImagesR, self.page.get(get_redirect=True))
+            match = re.search(FilesR, self.page.get(get_redirect=True))
             if match:
                 self._fileName = match.group(1)
 
@@ -695,7 +695,7 @@ class Candidate:
 
             self.commit(old_text, new_text, page, "Added [[%s]]" % file)
 
-    def getImagePage(self):
+    def getFilePage(self):
         """Get the media page itself."""
         return pywikibot.Page(G_Site, self.fileName())
 
@@ -1282,7 +1282,7 @@ class DelistCandidate(Candidate):
         # if we are we will soon be rotated away anyway.
         # So just check and remove the candidate from any gallery pages
 
-        references = self.getImagePage().getReferences(withTemplateInclusion=False)
+        references = self.getFilePage().getReferences(withTemplateInclusion=False)
         for ref in references:
             if ref.title().startswith("Commons:Featured media/"):
                 if ref.title().startswith("Commons:Featured media/chronological"):
@@ -1313,7 +1313,7 @@ class DelistCandidate(Candidate):
 
     def removeAssessments(self):
         """Remove FM status from an media."""
-        mediaPage = self.getImagePage()
+        mediaPage = self.getFilePage()
         old_text = mediaPage.get(get_redirect=True)
 
         # First check for the old {{Featured media}} template
@@ -1426,7 +1426,7 @@ def filter_content(text):
     Currently this includes:
     * The <s> tag for striking out votes
     * The <nowiki> tag which is just for displaying syntax
-    * Image notes
+    * File notes
     * Html comments
 
     """
@@ -1679,13 +1679,13 @@ WithdrawnR = re.compile(r"{{\s*(?:[wW]ithdrawn?|[fF]PD)\s*(\|.*)?}}", re.MULTILI
 # Nomination that contain the fmx template
 FmxR = re.compile(r"{{\s*FMX(\|.*)?}}", re.MULTILINE)
 # Counts the number of displayed medias
-ImagesR = re.compile(r"\[\[((?:[Ff]ile|[Ii]mage):[^|]+).*?\]\]")
+FilesR = re.compile(r"\[\[((?:[Ff]ile|[Ii]mage):[^|]+).*?\]\]")
 # Look for a size specification of the media link
-ImagesSizeR = re.compile(r"\|.*?(\d+)\s*px")
+FilesSizeR = re.compile(r"\|.*?(\d+)\s*px")
 # Find if there is a thumb parameter specified
-ImagesThumbR = re.compile(r"\|\s*thumb\b")
+FilesThumbR = re.compile(r"\|\s*thumb\b")
 # Finds the last media link on a page
-LastImageR = re.compile(
+LastFileR = re.compile(
     r"(?s)(\[\[(?:[Ff]ile|[Ii]mage):[^\n]*\]\])(?!.*\[\[(?:[Ff]ile|[Ii]mage):)"
 )
 
