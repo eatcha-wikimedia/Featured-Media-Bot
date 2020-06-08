@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This bot runs as FPCBot on wikimedia commons
-It implements vote counting and supports bot runs as FPCBot on wikimedia commons
+This bot runs as FMCBot on wikimedia commons
+It implements vote counting and supports bot runs as FMCBot on wikimedia commons
 It implements vote counting and supports
 moving the finished nomination to the archive.
 
@@ -52,7 +52,7 @@ class Candidate:
     """
     This is one picture candidate
 
-    This class just serves as base for the DelistCandidate and FPCandidate classes
+    This class just serves as base for the DelistCandidate and FMCandidate classes
     """
 
     def __init__(
@@ -255,7 +255,7 @@ class Candidate:
             out("Warning - %s has no content" % self.page, color="lightred")
             return False
 
-        if re.search(r"{{\s*FPC-closed-ignored.*}}", old_text):
+        if re.search(r"{{\s*FMC-closed-ignored.*}}", old_text):
             out('"%s" is marked as ignored, so ignoring' % self.cutTitle())
             return False
 
@@ -765,7 +765,7 @@ class Candidate:
                     + old_text[end:]
                 )
                 # new_text = re.sub(r'({{\s*[Ii]nformation)',r'{{Assessments|featured=1}}\n\1',old_text)
-                self.commit(old_text, new_text, current_page, "FPC promotion")
+                self.commit(old_text, new_text, current_page, "FMC promotion")
 
     def addToCurrentMonth(self):
         """
@@ -779,7 +779,7 @@ class Candidate:
             files = []
             files.append(self.fileName())
         for file in files:
-            FinalVotesR = re.compile(r'FPC-results-reviewed\|support=([0-9]{0,3})\|oppose=([0-9]{0,3})\|neutral=([0-9]{0,3})\|')
+            FinalVotesR = re.compile(r'FMC-results-reviewed\|support=([0-9]{0,3})\|oppose=([0-9]{0,3})\|neutral=([0-9]{0,3})\|')
             NomPagetext = self.page.get(get_redirect=True)
             matches = FinalVotesR.finditer(NomPagetext)
             for m in matches:
@@ -890,7 +890,7 @@ class Candidate:
             )
             try:
                 self.commit(
-                    old_text, new_text, talk_page, "FPC promotion of [[%s]]" % fn_al
+                    old_text, new_text, talk_page, "FMC promotion of [[%s]]" % fn_al
                 )
             except pywikibot.LockedPage as error:
                 out(
@@ -918,7 +918,7 @@ class Candidate:
 
         try:
             self.commit(
-                old_text, new_text, talk_page, "FPC promotion of [[%s]]" % fn_al
+                old_text, new_text, talk_page, "FMC promotion of [[%s]]" % fn_al
             )
         except pywikibot.LockedPage as error:
             out(
@@ -985,7 +985,7 @@ class Candidate:
 
             try:
                 self.commit(
-                    old_text, new_text, talk_page, "FPC promotion of [[%s]]" % fn_al
+                    old_text, new_text, talk_page, "FMC promotion of [[%s]]" % fn_al
                 )
             except pywikibot.LockedPage as error:
                 out(
@@ -1167,7 +1167,7 @@ class Candidate:
             out("Changes to '%s' ignored" % page.title())
 
 
-class FPCandidate(Candidate):
+class FMCandidate(Candidate):
     """A candidate up for promotion."""
 
     def __init__(self, page):
@@ -1188,10 +1188,10 @@ class FPCandidate(Candidate):
 
     def getResultString(self):
         if self.imageCount() > 1:
-            return "\n\n{{FPC-results-unreviewed|support=X|oppose=X|neutral=X|featured=no|gallery=|alternative=|sig=<small>'''Note: this candidate has several alternatives, thus if featured the alternative parameter needs to be specified.'''</small> /~~~~)}}"
+            return "\n\n{{FMC-results-unreviewed|support=X|oppose=X|neutral=X|featured=no|gallery=|alternative=|sig=<small>'''Note: this candidate has several alternatives, thus if featured the alternative parameter needs to be specified.'''</small> /~~~~)}}"
         else:
             return (
-                "\n\n{{FPC-results-unreviewed|support=%d|oppose=%d|neutral=%d|featured=%s|gallery=%s|sig=~~~~}}"
+                "\n\n{{FMC-results-unreviewed|support=%d|oppose=%d|neutral=%d|featured=%s|gallery=%s|sig=~~~~}}"
                 % (self._pro, self._con, self._neu, "yes" if self.isPassed() else "no", self.findGalleryOfFile() )
             )
 
@@ -1257,7 +1257,7 @@ class DelistCandidate(Candidate):
 
     def getResultString(self):
         return (
-            "\n\n{{FPC-delist-results-unreviewed|delist=%d|keep=%d|neutral=%d|delisted=%s|sig=~~~~}}"
+            "\n\n{{FMC-delist-results-unreviewed|delist=%d|keep=%d|neutral=%d|delisted=%s|sig=~~~~}}"
             % (self._pro, self._con, self._neu, "yes" if self.isPassed() else "no")
         )
 
@@ -1358,7 +1358,7 @@ def out(text, newline=True, date=False, color=None):
 
 
 def findCandidates(page_url, delist):
-    """Finds all candidates on the main FPC page."""
+    """Finds all candidates on the main FMC page."""
     page = pywikibot.Page(G_Site, page_url)
     candidates = []
     templates = page.templates()
@@ -1369,7 +1369,7 @@ def findCandidates(page_url, delist):
             if delist and "/removal/" in title:
                 candidates.append(DelistCandidate(template))
             elif not delist and "/removal/" not in title:
-                candidates.append(FPCandidate(template))
+                candidates.append(FMCandidate(template))
         else:
             pass
             # out("Skipping '%s'" % title)
@@ -1627,7 +1627,7 @@ PreviousResultR = re.compile(
 # Looks for verified results
 VerifiedResultR = re.compile(
     r"""
-                              {{\s*FPC-results-reviewed\s*\|        # Template start
+                              {{\s*FMC-results-reviewed\s*\|        # Template start
                               \s*support\s*=\s*(\d+)\s*\|           # Support votes (1)
                               \s*oppose\s*=\s*(\d+)\s*\|            # Oppose Votes  (2)
                               \s*neutral\s*=\s*(\d+)\s*\|           # Neutral votes (3)
@@ -1640,20 +1640,20 @@ VerifiedResultR = re.compile(
 )
 
 VerifiedDelistResultR = re.compile(
-    r"{{\s*FPC-delist-results-reviewed\s*\|\s*delist\s*=\s*(\d+)\s*\|\s*keep\s*=\s*(\d+)\s*\|\s*neutral\s*=\s*(\d+)\s*\|\s*delisted\s*=\s*(\w+).*?}}",
+    r"{{\s*FMC-delist-results-reviewed\s*\|\s*delist\s*=\s*(\d+)\s*\|\s*keep\s*=\s*(\d+)\s*\|\s*neutral\s*=\s*(\d+)\s*\|\s*delisted\s*=\s*(\w+).*?}}",
     re.MULTILINE,
 )
 
 # Matches the entire line including newline so they can be stripped away
 CountedTemplateR = re.compile(
-    r"^.*{{\s*FPC-results-unreviewed.*}}.*$\n?", re.MULTILINE
+    r"^.*{{\s*FMC-results-unreviewed.*}}.*$\n?", re.MULTILINE
 )
 DelistCountedTemplateR = re.compile(
-    r"^.*{{\s*FPC-delist-results-unreviewed.*}}.*$\n?", re.MULTILINE
+    r"^.*{{\s*FMC-delist-results-unreviewed.*}}.*$\n?", re.MULTILINE
 )
-ReviewedTemplateR = re.compile(r"^.*{{\s*FPC-results-reviewed.*}}.*$\n?", re.MULTILINE)
+ReviewedTemplateR = re.compile(r"^.*{{\s*FMC-results-reviewed.*}}.*$\n?", re.MULTILINE)
 DelistReviewedTemplateR = re.compile(
-    r"^.*{{\s*FPC-delist-results-reviewed.*}}.*$\n?", re.MULTILINE
+    r"^.*{{\s*FMC-delist-results-reviewed.*}}.*$\n?", re.MULTILINE
 )
 
 # Is whitespace allowed at the end ?
