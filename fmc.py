@@ -152,7 +152,7 @@ class Candidate:
     def findGalleryOfFile(self):
         """Try to find Gallery in the nomination page to make closing users life easier."""
         text = self.page.get(get_redirect=True)
-        RegexGallery = re.compile(r'(?:.*)Gallery(?:.*)(?:\s.*)\[\[Commons\:Featured[_ ]pictures\/([^\]]{1,180})')
+        RegexGallery = re.compile(r'(?:.*)Gallery(?:.*)(?:\s.*)\[\[Commons\:Featured[_ ]media\/([^\]]{1,180})')
         matches = RegexGallery.finditer(text)
         for m in matches:
             Gallery = (m.group(1))
@@ -590,7 +590,7 @@ class Candidate:
         else:
             file = self.fileName()
 
-        listpage = "Commons:Featured pictures, list"
+        listpage = "Commons:Featured media, list"
         page = pywikibot.Page(G_Site, listpage)
         old_text = page.get(get_redirect=True)
 
@@ -623,7 +623,7 @@ class Candidate:
     def addToCategorizedFeaturedList(self, gallery):
         """
         Adds the candidate to the gallery of
-        pictures. This is the full gallery with
+        media. This is the full gallery with
         the section in that particular page.
 
         This is ==STEP 2== of the parking procedure
@@ -638,7 +638,7 @@ class Candidate:
             files = []
             files.append(self.fileName())
         for file in files:
-            gallery_full_path = "Commons:Featured pictures/" + re.sub(r"#.*", "", gallery)
+            gallery_full_path = "Commons:Featured media/" + re.sub(r"#.*", "", gallery)
             page = pywikibot.Page(G_Site, gallery_full_path)
             old_text = page.get(get_redirect=True)
             section_regex = r"#(.*)"
@@ -702,7 +702,7 @@ class Candidate:
     def addAssessments(self):
         """
         Adds the the assessments template to a featured
-        pictures descripion page.
+        media descripion page.
         This is ==STEP 3== of the parking procedure
         Will add assessments to all files in a set
         """
@@ -791,7 +791,7 @@ class Candidate:
                     wn = m.group(3)
 
             today = datetime.date.today()
-            monthpage = "Commons:Featured_pictures/chronological/%s %s" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
+            monthpage = "Commons:Featured_media/chronological/%s %s" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
             page = pywikibot.Page(G_Site, monthpage)
             try:
                 old_text = page.get(get_redirect=True)
@@ -1062,11 +1062,11 @@ class Candidate:
 
         1. Check whether the count is verified or not
         2. If verified and featured:
-          * Add page to 'Commons:Featured pictures, list'
-          * Add to subpage of 'Commons:Featured pictures, list'
+          * Add page to 'Commons:Featured media, list'
+          * Add to subpage of 'Commons:Featured media, list'
           * Add {{Assessments|featured=1}} or just the parameter if the template is already there
             to the picture page (should also handle subpages)
-          * Add the picture to the 'Commons:Featured_pictures/chronological/current_month'
+          * Add the picture to the 'Commons:Featured_media/chronological/current_month'
           * Add the template {{FMpromotion|File:XXXXX.jpg}} to the Talk Page of the nominator.
         3. If featured or not move it from 'Commons:Featured picture candidates/candidate list'
            to the log, f.ex. 'Commons:Featured picture candidates/Log/August 2009'
@@ -1284,8 +1284,8 @@ class DelistCandidate(Candidate):
 
         references = self.getImagePage().getReferences(withTemplateInclusion=False)
         for ref in references:
-            if ref.title().startswith("Commons:Featured pictures/"):
-                if ref.title().startswith("Commons:Featured pictures/chronological"):
+            if ref.title().startswith("Commons:Featured media/"):
+                if ref.title().startswith("Commons:Featured media/chronological"):
                     out("Adding delist note to %s" % ref.title())
                     old_text = ref.get(get_redirect=True)
                     now = datetime.datetime.utcnow()
