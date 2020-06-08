@@ -191,8 +191,8 @@ class Candidate:
         withdrawn = len(re.findall(WithdrawnR, text))
         return withdrawn > 0
 
-    def isFPX(self):
-        """Page marked with FPX template."""
+    def isFMX(self):
+        """Page marked with FMX template."""
         return len(re.findall(FpxR, self.page.get(get_redirect=True)))
 
     def rulesOfFifthDay(self):
@@ -221,11 +221,11 @@ class Candidate:
             out('"%s" no such page?!' % self.cutTitle())
             return
 
-        if (self.isWithdrawn() or self.isFPX()) and self.imageCount() <= 1:
+        if (self.isWithdrawn() or self.isFMX()) and self.imageCount() <= 1:
             # Will close withdrawn nominations if there are more than one
             # full day since the last edit
 
-            why = "withdrawn" if self.isWithdrawn() else "FPXed"
+            why = "withdrawn" if self.isWithdrawn() else "FMXed"
 
             oldEnough = self.daysSinceLastEdit() > 0
             out(
@@ -479,8 +479,8 @@ class Candidate:
             out("%s: (ignoring, was withdrawn)" % self.cutTitle())
             return
 
-        elif self.isFPX():
-            out("%s: (ignoring, was FPXed)" % self.cutTitle())
+        elif self.isFMX():
+            out("%s: (ignoring, was FMXed)" % self.cutTitle())
             return
 
         elif not res:
@@ -820,7 +820,7 @@ class Candidate:
             # TODO: We lack a good way to find the creator, so it is left out at the moment
 
             if count ==1:
-                old_text = "{{subst:FPArchiveChrono}}\n== %s %s ==\n<gallery>\n</gallery>" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
+                old_text = "{{subst:FMArchiveChrono}}\n== %s %s ==\n<gallery>\n</gallery>" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
             else:pass
             
             if self.isSet():
@@ -880,10 +880,10 @@ class Candidate:
         # it should be special compared to usual promotions.
         
         if self.isSet():
-            if re.search(r"{{FPpromotionSet\|%s}}" % wikipattern(fn_al), old_text):
+            if re.search(r"{{FMpromotionSet\|%s}}" % wikipattern(fn_al), old_text):
                 return
             files_newline_string = converttostr(self.setFiles(), '\n')
-            new_text = old_text + "\n\n== Set Promoted to FP ==\n<gallery mode=packed heights=80px>%s\n</gallery>\n{{FPpromotionSet|%s%s}} /~~~~" % (
+            new_text = old_text + "\n\n== Set Promoted to FM ==\n<gallery mode=packed heights=80px>%s\n</gallery>\n{{FMpromotionSet|%s%s}} /~~~~" % (
                 files_newline_string,
                 fn_al,
                 subpage,
@@ -903,7 +903,7 @@ class Candidate:
             pass
 
 
-        if re.search(r"{{FPpromotion\|%s}}" % wikipattern(fn_or), old_text):
+        if re.search(r"{{FMpromotion\|%s}}" % wikipattern(fn_or), old_text):
             out(
                 "Skipping notifyNominator for '%s', page already listed at '%s'."
                 % (self.cleanTitle(), talk_link),
@@ -911,7 +911,7 @@ class Candidate:
             )
             return
 
-        new_text = old_text + "\n\n== FP Promotion ==\n{{FPpromotion|%s%s}} /~~~~" % (
+        new_text = old_text + "\n\n== FM Promotion ==\n{{FMpromotion|%s%s}} /~~~~" % (
             fn_al,
             subpage,
         )
@@ -961,7 +961,7 @@ class Candidate:
             # in that case skip. Can happen if the process
             # have been previously interrupted.
 
-            if re.search(r"{{FPpromotion\|%s}}" % wikipattern(fn_or), old_text):
+            if re.search(r"{{FMpromotion\|%s}}" % wikipattern(fn_or), old_text):
                 out(
                     "Skipping notifyUploader for '%s', page already listed at '%s'."
                     % (self.cleanTitle(), talk_link),
@@ -978,7 +978,7 @@ class Candidate:
                 subpage = "|subpage="+(re.search(r"[Ss]et/(.*)", self.page.title())).group(0)
                 fn_al = file
 
-            new_text = old_text + "\n\n== FP Promotion ==\n{{FPpromotedUploader|%s%s}} /~~~~" % (
+            new_text = old_text + "\n\n== FM Promotion ==\n{{FMpromotedUploader|%s%s}} /~~~~" % (
                 fn_al,
                 subpage,
             )
@@ -1067,7 +1067,7 @@ class Candidate:
           * Add {{Assessments|featured=1}} or just the parameter if the template is already there
             to the picture page (should also handle subpages)
           * Add the picture to the 'Commons:Featured_pictures/chronological/current_month'
-          * Add the template {{FPpromotion|File:XXXXX.jpg}} to the Talk Page of the nominator.
+          * Add the template {{FMpromotion|File:XXXXX.jpg}} to the Talk Page of the nominator.
         3. If featured or not move it from 'Commons:Featured picture candidates/candidate list'
            to the log, f.ex. 'Commons:Featured picture candidates/Log/August 2009'
         """
@@ -1093,8 +1093,8 @@ class Candidate:
             out("%s: (ignoring, was withdrawn)" % self.cutTitle())
             return
 
-        if self.isFPX():
-            out("%s: (ignoring, was FPXed)" % self.cutTitle())
+        if self.isFMX():
+            out("%s: (ignoring, was FMXed)" % self.cutTitle())
             return
 
         # Check if the image page exist, if not we ignore this candidate
@@ -1312,7 +1312,7 @@ class DelistCandidate(Candidate):
                     )
 
     def removeAssessments(self):
-        """Remove FP status from an image."""
+        """Remove FM status from an image."""
         imagePage = self.getImagePage()
         old_text = imagePage.get(get_redirect=True)
 
@@ -1564,7 +1564,7 @@ oppose_templates = (
     "[Ss]tödjer ej",
     "ไม่เห็นด้วย",
     "[Kk]arsi",
-    "FPX contested",
+    "FMX contested",
     "[Cc]ontra",
     "[Cc]ontrario",
     "[Oo]versaturated",
@@ -1677,7 +1677,7 @@ KeepR = re.compile(r"{{\s*(?:%s)(\|.*)?\s*}}" % "|".join(keep_templates), re.MUL
 # must be able to detect after the pipe symbol
 WithdrawnR = re.compile(r"{{\s*(?:[wW]ithdrawn?|[fF]PD)\s*(\|.*)?}}", re.MULTILINE)
 # Nomination that contain the fpx template
-FpxR = re.compile(r"{{\s*FPX(\|.*)?}}", re.MULTILINE)
+FpxR = re.compile(r"{{\s*FMX(\|.*)?}}", re.MULTILINE)
 # Counts the number of displayed images
 ImagesR = re.compile(r"\[\[((?:[Ff]ile|[Ii]mage):[^|]+).*?\]\]")
 # Look for a size specification of the image link
