@@ -16,8 +16,8 @@ It adds the following commandline arguments:
 -auto             Do not ask before commiting edits to articles
 -dry              Do not submit any edits, just print them
 -threads          Use threads to speed things up, can't be used in interactive mode
--fpc              Handle the featured candidates (if neither -fpc or -delist is used all candidates are handled)
--delist           Handle the delisting candidates (if neither -fpc or -delist is used all candidates are handled)
+-fmc              Handle the featured candidates (if neither -fmc or -delist is used all candidates are handled)
+-delist           Handle the delisting candidates (if neither -fmc or -delist is used all candidates are handled)
 -notime           Avoid displaying timestamps in log output
 -match pattern    Only operate on candidates matching this pattern
 """
@@ -1382,7 +1382,7 @@ def checkCandidates(check, page, delist):
 
     @param check  A function in Candidate to call on each candidate
     @param page   A page containing all candidates
-    @param delist Boolean, telling whether this is delistings of fpcs
+    @param delist Boolean, telling whether this is delistings of fmcs
     """
     if not G_Site.logged_in():
         G_Site.login()
@@ -1719,7 +1719,7 @@ def main(*args):
 
     worked = False
     delist = False
-    fpc = False
+    fmc = False
 
     # First look for arguments that should be set for all operations
     i = 1
@@ -1740,8 +1740,8 @@ def main(*args):
             delist = True
             sys.argv.remove(arg)
             continue
-        elif arg == "-fpc":
-            fpc = True
+        elif arg == "-fmc":
+            fmc = True
             sys.argv.remove(arg)
             continue
         elif arg == "-notime":
@@ -1758,9 +1758,9 @@ def main(*args):
                 sys.exit(0)
         i += 1
 
-    if not delist and not fpc:
+    if not delist and not fmc:
         delist = True
-        fpc = True
+        fmc = True
 
     # Can not use interactive mode with threads
     if G_Threads and (not G_Dry and not G_Auto):
@@ -1778,7 +1778,7 @@ def main(*args):
             "-info",
             "-park",
             "-threads",
-            "-fpc",
+            "-fmc",
             "-delist",
             "-help",
             "-notime",
@@ -1796,21 +1796,21 @@ def main(*args):
         if arg == "-test":
             if delist:
                 out("-test not supported for delisting candidates")
-            if fpc:
+            if fmc:
                 checkCandidates(Candidate.compareResultToCount, testLog, delist=False)
         elif arg == "-close":
             if delist:
                 out("Closing delist candidates...", color="lightblue")
                 checkCandidates(Candidate.closePage, candidates_page, delist=True)
-            if fpc:
-                out("Closing fpc candidates...", color="lightblue")
+            if fmc:
+                out("Closing fmc candidates...", color="lightblue")
                 checkCandidates(Candidate.closePage, candidates_page, delist=False)
         elif arg == "-info":
             if delist:
                 out("Gathering info about delist candidates...", color="lightblue")
                 checkCandidates(Candidate.printAllInfo, candidates_page, delist=True)
-            if fpc:
-                out("Gathering info about fpc candidates...", color="lightblue")
+            if fmc:
+                out("Gathering info about fmc candidates...", color="lightblue")
                 checkCandidates(Candidate.printAllInfo, candidates_page, delist=False)
         elif arg == "-park":
             if G_Threads and G_Auto:
@@ -1822,8 +1822,8 @@ def main(*args):
             if delist:
                 out("Parking delist candidates...", color="lightblue")
                 checkCandidates(Candidate.park, candidates_page, delist=True)
-            if fpc:
-                out("Parking fpc candidates...", color="lightblue")
+            if fmc:
+                out("Parking fmc candidates...", color="lightblue")
                 checkCandidates(Candidate.park, candidates_page, delist=False)
 
     if not worked:
