@@ -50,7 +50,7 @@ class ThreadCheckCandidate(threading.Thread):
 
 class Candidate:
     """
-    This is one picture candidate
+    This is one media candidate
 
     This class just serves as base for the DelistCandidate and FMCandidate classes
     """
@@ -769,7 +769,7 @@ class Candidate:
 
     def addToCurrentMonth(self):
         """
-        Adds the candidate to the list of featured picture this month
+        Adds the candidate to the list of featured media this month
 
         This is ==STEP 4== of the parking procedure
         """
@@ -1009,7 +1009,7 @@ class Candidate:
         # (Note FIXME, we must probably create this page if it does not exist)
         today = datetime.date.today()
         current_month = datetime.datetime.utcnow().strftime("%B")
-        log_link = "Commons:Featured picture candidates/Log/%s %s" % (
+        log_link = "Commons:Featured media candidates/Log/%s %s" % (
             current_month,
             today.year,
         )
@@ -1065,11 +1065,11 @@ class Candidate:
           * Add page to 'Commons:Featured media, list'
           * Add to subpage of 'Commons:Featured media, list'
           * Add {{Assessments|featured=1}} or just the parameter if the template is already there
-            to the picture page (should also handle subpages)
-          * Add the picture to the 'Commons:Featured_media/chronological/current_month'
+            to the media page (should also handle subpages)
+          * Add the media to the 'Commons:Featured_media/chronological/current_month'
           * Add the template {{FMpromotion|File:XXXXX.jpg}} to the Talk Page of the nominator.
-        3. If featured or not move it from 'Commons:Featured picture candidates/candidate list'
-           to the log, f.ex. 'Commons:Featured picture candidates/Log/August 2009'
+        3. If featured or not move it from 'Commons:Featured media candidates/candidate list'
+           to the log, f.ex. 'Commons:Featured media candidates/Log/August 2009'
         """
 
         # First make a check that the page actually exist:
@@ -1184,7 +1184,7 @@ class FMCandidate(Candidate):
             CountedTemplateR,
             VerifiedResultR,
         )
-        self._listPageName = "Commons:Featured picture candidates/candidate list"
+        self._listPageName = "Commons:Featured media candidates/candidate list"
 
     def getResultString(self):
         if self.imageCount() > 1:
@@ -1224,7 +1224,7 @@ class FMCandidate(Candidate):
                 out("%s: (ignoring, alternative not set)" % self.cutTitle())
                 return
 
-        # Featured picture
+        # Featured media
         if not len(fgallery):
             out("%s: (ignoring, gallery not defined)" % self.cutTitle())
             return
@@ -1253,7 +1253,7 @@ class DelistCandidate(Candidate):
             DelistCountedTemplateR,
             VerifiedDelistResultR,
         )
-        self._listPageName = "Commons:Featured picture candidates/candidate list"
+        self._listPageName = "Commons:Featured media candidates/candidate list"
 
     def getResultString(self):
         return (
@@ -1316,9 +1316,9 @@ class DelistCandidate(Candidate):
         imagePage = self.getImagePage()
         old_text = imagePage.get(get_redirect=True)
 
-        # First check for the old {{Featured picture}} template
+        # First check for the old {{Featured media}} template
         new_text = re.sub(
-            r"{{[Ff]eatured[ _]picture}}", "{{Delisted picture}}", old_text
+            r"{{[Ff]eatured[ _]media}}", "{{Delisted media}}", old_text
         )
 
         # Then check for the assessments template
@@ -1613,7 +1613,7 @@ keep_templates = (
 
 # Used to remove the prefix and just print the file names
 # of the candidate titles.
-candPrefix = "Commons:Featured picture candidates/"
+candPrefix = "Commons:Featured media candidates/"
 PrefixR = re.compile("%s.*?([Ff]ile|[Ii]mage)?:" % candPrefix)
 
 # Looks for result counts, an example of such a line is:
@@ -1714,8 +1714,8 @@ def main(*args):
     # Will sys.exit(-1) if another instance is running
     me = singleton.SingleInstance()
 
-    candidates_page = "Commons:Featured picture candidates/candidate_list"
-    testLog = "Commons:Featured_picture_candidates/Log/January_2009"
+    candidates_page = "Commons:Featured media candidates/candidate_list"
+    testLog = "Commons:Featured_media_candidates/Log/January_2009"
 
     worked = False
     delist = False
