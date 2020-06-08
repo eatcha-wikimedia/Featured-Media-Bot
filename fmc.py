@@ -106,7 +106,7 @@ class Candidate:
                     self.daysOld(),
                     self.daysSinceLastEdit(),
                     self.sectionCount(),
-                    self.imageCount(),
+                    self.mediaCount(),
                     self.isWithdrawn(),
                     self.statusString(),
                 )
@@ -128,7 +128,7 @@ class Candidate:
 
 
     def creator(self):
-        """Return the link to the user that created the image, Not implemented yet."""
+        """Return the link to the user that created the media, Not implemented yet."""
         pass
 
     def isSet(self):
@@ -221,7 +221,7 @@ class Candidate:
             out('"%s" no such page?!' % self.cutTitle())
             return
 
-        if (self.isWithdrawn() or self.isFMX()) and self.imageCount() <= 1:
+        if (self.isWithdrawn() or self.isFMX()) and self.mediaCount() <= 1:
             # Will close withdrawn nominations if there are more than one
             # full day since the last edit
 
@@ -244,7 +244,7 @@ class Candidate:
             return True
 
         # We skip rule of the fifth day if we have several alternatives
-        fifthDay = False if self.imageCount() > 1 else self.rulesOfFifthDay()
+        fifthDay = False if self.mediaCount() > 1 else self.rulesOfFifthDay()
 
         if not fifthDay and not self.isDone():
             out('"%s" is still active, ignoring' % self.cutTitle())
@@ -267,7 +267,7 @@ class Candidate:
             out('"%s" already closed and reviewed, ignoring' % self.cutTitle())
             return False
 
-        if self.imageCount() <= 1:
+        if self.mediaCount() <= 1:
             self.countVotes()
 
         result = self.getResultString()
@@ -275,7 +275,7 @@ class Candidate:
         new_text = old_text + result
 
         # Add the featured status to the header
-        if self.imageCount() <= 1:
+        if self.mediaCount() <= 1:
             new_text = self.fixHeader(new_text)
 
         self.commit(
@@ -398,7 +398,7 @@ class Candidate:
 
     def isPassed(self):
         """
-        Find if an image can be featured.
+        Find if an media can be featured.
         Does not check the age, it needs to be
         checked using isDone()
         """
@@ -413,18 +413,18 @@ class Candidate:
 
     def isIgnored(self):
         """Some nominations currently require manual check."""
-        return self.imageCount() > 1
+        return self.mediaCount() > 1
 
     def sectionCount(self):
         """Count the number of sections in this candidate."""
         text = self.page.get(get_redirect=True)
         return len(re.findall(SectionR, text))
 
-    def imageCount(self):
+    def mediaCount(self):
         """
-        Count the number of images that are displayed
+        Count the number of medias that are displayed
 
-        Does not count images that are below a certain threshold
+        Does not count medias that are below a certain threshold
         as they probably are just inline icons and not separate
         edits of this candidate.
         """
@@ -440,7 +440,7 @@ class Candidate:
         count = len(matches)
 
         if count >= 2:
-            # We have several images, check if they are too small to be counted
+            # We have several medias, check if they are too small to be counted
             for img in matches:
 
                 if re.search(ImagesThumbR, img.group(0)):
@@ -547,7 +547,7 @@ class Candidate:
         """
         Return only the filename of this candidate
         This is first based on the title of the page but if that page is not found
-        then the first image link in the page is used.
+        then the first media link in the page is used.
         Will return the new file name if moved.
         @param alternative if false disregard any alternative and return the real filename
         """
@@ -577,7 +577,7 @@ class Candidate:
 
     def addToFeaturedList(self, gallery):
         """
-        Will add this page to the list of featured images.
+        Will add this page to the list of featured medias.
         This uses just the base of the gallery, like 'Animals'.
         Should only be called on closed and verified candidates
 
@@ -675,7 +675,7 @@ class Candidate:
                 )
                 return
 
-            # If we found a section, we try to add the image in the section else add to the bottom most gallery (unsorted)
+            # If we found a section, we try to add the media in the section else add to the bottom most gallery (unsorted)
 
             if section != None:
                 line_above_the_closing_gallery_tag = section_text_search.splitlines()[-2]
@@ -696,7 +696,7 @@ class Candidate:
             self.commit(old_text, new_text, page, "Added [[%s]]" % file)
 
     def getImagePage(self):
-        """Get the image page itself."""
+        """Get the media page itself."""
         return pywikibot.Page(G_Site, self.fileName())
 
     def addAssessments(self):
@@ -1097,9 +1097,9 @@ class Candidate:
             out("%s: (ignoring, was FMXed)" % self.cutTitle())
             return
 
-        # Check if the image page exist, if not we ignore this candidate
+        # Check if the media page exist, if not we ignore this candidate
         if not pywikibot.Page(G_Site, self.fileName()).exists():
-            out("%s: (WARNING: ignoring, can't find image page)" % self.cutTitle())
+            out("%s: (WARNING: ignoring, can't find media page)" % self.cutTitle())
             return
 
         # Ok we should now have a candidate with verified results that we can park
@@ -1187,7 +1187,7 @@ class FMCandidate(Candidate):
         self._listPageName = "Commons:Featured media candidates/candidate list"
 
     def getResultString(self):
-        if self.imageCount() > 1:
+        if self.mediaCount() > 1:
             return "\n\n{{FMC-results-unreviewed|support=X|oppose=X|neutral=X|featured=no|gallery=|alternative=|sig=<small>'''Note: this candidate has several alternatives, thus if featured the alternative parameter needs to be specified.'''</small> /~~~~)}}"
         else:
             return (
@@ -1196,7 +1196,7 @@ class FMCandidate(Candidate):
             )
 
     def getCloseCommitComment(self):
-        if self.imageCount() > 1:
+        if self.mediaCount() > 1:
             return "Closing for review - contains alternatives, needs manual count"
         else:
             return (
@@ -1213,8 +1213,8 @@ class FMCandidate(Candidate):
         # Now addToCategorizedFeaturedList can handle sections within the gallery page
         gallery_without_removing_section = results[4]
 
-        # Check if we have an alternative for a multi image
-        if self.imageCount() > 1:
+        # Check if we have an alternative for a multi media
+        if self.mediaCount() > 1:
             if len(results) > 5 and len(results[5]):
                 if not pywikibot.Page(G_Site, results[5]).exists():
                     out("%s: (ignoring, specified alternative not found)" % results[5])
@@ -1277,7 +1277,7 @@ class DelistCandidate(Candidate):
 
     def removeFromFeaturedLists(self, results):
         """Remove a candidate from all featured lists."""
-        # We skip checking the page with the 4 newest images
+        # We skip checking the page with the 4 newest medias
         # the chance that we are there is very small and even
         # if we are we will soon be rotated away anyway.
         # So just check and remove the candidate from any gallery pages
@@ -1312,9 +1312,9 @@ class DelistCandidate(Candidate):
                     )
 
     def removeAssessments(self):
-        """Remove FM status from an image."""
-        imagePage = self.getImagePage()
-        old_text = imagePage.get(get_redirect=True)
+        """Remove FM status from an media."""
+        mediaPage = self.getImagePage()
+        old_text = mediaPage.get(get_redirect=True)
 
         # First check for the old {{Featured media}} template
         new_text = re.sub(
@@ -1330,7 +1330,7 @@ class DelistCandidate(Candidate):
             new_text,
         )
 
-        self.commit(old_text, new_text, imagePage, "Delisted")
+        self.commit(old_text, new_text, mediaPage, "Delisted")
 
 
 def wikipattern(s):
@@ -1444,7 +1444,7 @@ def strip_tag(text, tag):
     return re.sub(r"(?s)<%s>.*?</%s>" % (tag, tag), "", text)
 
 def uploader(file, link=True):
-    """Return the link to the user that uploaded the nominated image."""
+    """Return the link to the user that uploaded the nominated media."""
     page = pywikibot.Page(G_Site, file)
     history = page.revisions(reverse=True, total=1)
     for data in history:
@@ -1632,8 +1632,8 @@ VerifiedResultR = re.compile(
                               \s*oppose\s*=\s*(\d+)\s*\|            # Oppose Votes  (2)
                               \s*neutral\s*=\s*(\d+)\s*\|           # Neutral votes (3)
                               \s*featured\s*=\s*(\w+)\s*\|          # Featured, should be yes or no, but is not verified at this point (4)
-                              \s*gallery\s*=\s*([^|]*)              # A gallery page if the image was featured (5)
-                              (?:\|\s*alternative\s*=\s*([^|]*))?   # For candidate with alternatives this specifies the winning image (6)
+                              \s*gallery\s*=\s*([^|]*)              # A gallery page if the media was featured (5)
+                              (?:\|\s*alternative\s*=\s*([^|]*))?   # For candidate with alternatives this specifies the winning media (6)
                               .*}}                                  # END
                               """,
     re.MULTILINE | re.VERBOSE,
@@ -1678,13 +1678,13 @@ KeepR = re.compile(r"{{\s*(?:%s)(\|.*)?\s*}}" % "|".join(keep_templates), re.MUL
 WithdrawnR = re.compile(r"{{\s*(?:[wW]ithdrawn?|[fF]PD)\s*(\|.*)?}}", re.MULTILINE)
 # Nomination that contain the fmx template
 FmxR = re.compile(r"{{\s*FMX(\|.*)?}}", re.MULTILINE)
-# Counts the number of displayed images
+# Counts the number of displayed medias
 ImagesR = re.compile(r"\[\[((?:[Ff]ile|[Ii]mage):[^|]+).*?\]\]")
-# Look for a size specification of the image link
+# Look for a size specification of the media link
 ImagesSizeR = re.compile(r"\|.*?(\d+)\s*px")
 # Find if there is a thumb parameter specified
 ImagesThumbR = re.compile(r"\|\s*thumb\b")
-# Finds the last image link on a page
+# Finds the last media link on a page
 LastImageR = re.compile(
     r"(?s)(\[\[(?:[Ff]ile|[Ii]mage):[^\n]*\]\])(?!.*\[\[(?:[Ff]ile|[Ii]mage):)"
 )
