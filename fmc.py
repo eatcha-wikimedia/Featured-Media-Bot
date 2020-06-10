@@ -673,7 +673,7 @@ class Candidate:
 
             if section != None:
                 line_above_the_closing_gallery_tag = section_text_search.splitlines()[-2]
-                candidate_text = "%s|%s" % (file, self.cleanTitle())
+                candidate_text = "%s" % file
                 append_candidate_text_in_line_above_closing_gallery_tag = line_above_the_closing_gallery_tag + "\n" + candidate_text
                 new_text = old_text.replace(line_above_the_closing_gallery_tag, append_candidate_text_in_line_above_closing_gallery_tag,1)
             else:
@@ -682,7 +682,7 @@ class Candidate:
                 # last gallery on the page.
                 new_text = re.sub(
                     "(?s)</gallery>(?!.*</gallery>)",
-                    "%s|%s\n</gallery>" % (file, self.cleanTitle()),
+                    "%s\n</gallery>" % (file),
                     old_text,
                     1,
                 )
