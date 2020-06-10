@@ -393,7 +393,7 @@ class Candidate:
         """
         Checks if a nomination can be closed
         """
-        return self.daysOld() >= 9
+        return self.daysOld() >= 27
 
     def isPassed(self):
         """
@@ -408,7 +408,7 @@ class Candidate:
         if not self._votesCounted:
             self.countVotes()
 
-        return self._pro >= 7 and (self._pro >= 2 * self._con)
+        return self._pro >= 5 and (self._pro >= 2 * self._con)
 
     def isIgnored(self):
         """Some nominations currently require manual check."""
@@ -700,71 +700,58 @@ class Candidate:
 
     def addAssessments(self):
         """
-        Adds the the assessments template to a featured
-        media descripion page.
+        Adds the FM promoted template to a featured
+        media description page.
         This is ==STEP 3== of the parking procedure
-        Will add assessments to all files in a set
         """
+        page = self.getVideoPage()
+        old_text = page.get(get_redirect=True)
 
-        if self.isSet():
-            files = self.setFiles()
-        else:
-            files = []
-            files.append(self.fileName())
-        for file in files:
-            page = pywikibot.Page(G_Site, file)
-            current_page = page
-            old_text = page.get(get_redirect=True)
-            AssR = re.compile(r"{{\s*[Aa]ssessments\s*\|(.*)}}")
-            fn_or = self.fileName(alternative=False)  # Original filename
-            fn_al = self.fileName(alternative=True)  # Alternative filename
-            # We add the com-nom parameter if the original filename
-            # differs from the alternative filename.
-            comnom = "|com-nom=%s" % fn_or.replace("File:", "") if fn_or != fn_al else ""
-            
-            # The template needs the com-nom to link to the site from file page
-            if self.isSet():
-                comnom = "|com-nom="+(re.search(r"/[Ss]et/(.*)", self.page.title())).group(1)
-            else:
-                pass
+        AssR = re.compile(r"{{\s*FM[\s_]promoted\s*\|(.*)}}")
 
-            # First check if there already is an assessments template on the page
-            params = re.search(AssR, old_text)
-            if params:
-                # Make sure to remove any existing com/features or subpage params
-                # TODO: 'com' will be obsolete in the future and can then be removed
-                # TODO: 'subpage' is the old name of com-nom. Can be removed later.
-                params = re.sub(r"\|\s*(?:featured|com)\s*=\s*\d+", "", params.group(1))
-                params = re.sub(r"\|\s*(?:subpage|com-nom)\s*=\s*[^{}|]+", "", params)
-                params += "|featured=1"
-                params += comnom
-                if params.find("|") != 0:
-                    params = "|" + params
-                new_ass = "{{Assessments%s}}" % params
-                new_text = re.sub(AssR, new_ass, old_text)
-                if new_text == old_text:
-                    out(
-                        "No change in addAssessments, '%s' already featured."
-                        % self.cleanTitle()
-                    )
-                    return
-            else:
-                # There is no assessments template so just add it
-                if re.search(r"\{\{(?:|\s*)[Ll]ocation", old_text):
-                    end = findEndOfTemplate(old_text, "[Ll]ocation")
-                elif re.search(r"\{\{(?:|\s*)[Oo]bject[_\s][Ll]ocation", old_text):
-                    end = findEndOfTemplate(old_text, "[Oo]bject[_\s][Ll]ocation")
-                else:
-                    end = findEndOfTemplate(old_text, "[Ii]nformation")
-                
+        fn_or = self.fileName(alternative=False)  # Original filename
+        fn_al = self.fileName(alternative=True)  # Alternative filename
+        # We add the com-nom parameter if the original filename
+        # differs from the alternative filename.
+        comnom = "|com-nom=%s" % fn_or.replace("File:", "") if fn_or != fn_al else ""
 
-                new_text = (
-                    old_text[:end]
-                    + "\n{{Assessments|featured=1%s}}\n" % comnom
-                    + old_text[end:]
+        # First check if there already is an FV_promoted template on the page
+        params = re.search(AssR, old_text)
+        if params:
+            # Make sure to remove any existing com/features or subpage params
+            # TODO: 'com' will be obsolete in the future and can then be removed
+            # TODO: 'subpage' is the old name of com-nom. Can be removed later.
+            params = re.sub(r"\|\s*(?:featured|com)\s*=\s*\d+", "", params.group(1))
+            params = re.sub(r"\|\s*(?:subpage|com-nom)\s*=\s*[^{}|]+", "", params)
+            params += "|featured=1"
+            params += comnom
+            if params.find("|") != 0:
+                params = "|" + params
+            new_ass = "{{FM promoted%s}}" % params
+            nomuser = self.nominator()
+            upuser = self.uploader()
+            new_text = re.sub(AssR, new_ass, old_text)
+            if new_text == old_text:
+                out(
+                    "No change in addFVtags, '%s' already featured."
+                    % self.cleanTitle()
                 )
-                # new_text = re.sub(r'({{\s*[Ii]nformation)',r'{{Assessments|featured=1}}\n\1',old_text)
-                self.commit(old_text, new_text, current_page, "FMC promotion")
+                return
+        else:
+            # There is no FV_promoted template so just add it
+            end = findEndOfTemplate(old_text, "[Ii]nformation")
+            nomuser = self.nominator(link=False)
+            upuser = self.uploader(link=False)
+            new_text = (
+                old_text[:end]
+                + "\n{{FM promoted|featured=1%s}}" % comnom
+                + old_text[end:]
+                + "\n[[Category:Featured media nominated by %s]]\n" % nomuser
+                + "[[Category:Featured media by %s]]" % upuser
+            )
+            # new_text = re.sub(r'({{\s*[Ii]nformation)',r'{{FV_promoted|featured=1}}\n\1',old_text)
+
+        self.commit(old_text, new_text, page, "FMC promotion with automatic categorization :)")
 
     def addToCurrentMonth(self):
         """
@@ -821,7 +808,7 @@ class Candidate:
             if count ==1:
                 old_text = "{{subst:FMArchiveChrono}}\n== %s %s ==\n<gallery>\n</gallery>" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
             else:pass
-            
+
             if self.isSet():
                 file_title = "'''%s''' - a set of %s files" % ((re.search(r"/[Ss]et/(.*)", self.page.title())).group(1), str(len(self.setFiles())))
             else:
