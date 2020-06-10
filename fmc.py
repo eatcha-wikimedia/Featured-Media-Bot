@@ -126,15 +126,6 @@ class Candidate:
         else:
             return username
 
-
-
-
-
-
-    def creator(self):
-        """Return the link to the user that created the video"""
-        return uploader()
-
     def isSet(self):
         """Check if the nomination page has "/[Ss]et/" in it, if yes it must be a set nomination."""
         if re.search(r"/[Ss]et", self.page.title()):
@@ -733,7 +724,7 @@ class Candidate:
                 params = "|" + params
             new_ass = "{{FM promoted%s}}" % params
             nomuser = self.nominator()
-            upuser = uploader()
+            upuser = uploader(self.fileName())
             new_text = re.sub(AssR, new_ass, old_text)
             if new_text == old_text:
                 out(
@@ -745,7 +736,7 @@ class Candidate:
             # There is no FV_promoted template so just add it
             end = findEndOfTemplate(old_text, "[Ii]nformation")
             nomuser = self.nominator(link=False)
-            upuser = uploader(link=False)
+            upuser = uploader(self.fileName(),link=False)
             new_text = (
                 old_text[:end]
                 + "\n{{FM promoted|featured=1%s}}" % comnom
