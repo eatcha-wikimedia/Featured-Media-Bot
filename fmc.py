@@ -693,6 +693,64 @@ class Candidate:
         """Get the media page itself."""
         return pywikibot.Page(G_Site, self.fileName())
 
+    def makecategoryuploader(self):
+        """
+        this creates uploader category for featured media
+        """
+
+        why = "to have a propper count, and update list at  [[Category:Featured media uploaded by user name]]"
+        upuser = self.uploader(self.fileName(),link=False)
+        upcatpage = "Category:Featured media by %s" % upuser
+        cat_page = pywikibot.Page(G_Site, upcatpage)
+        try:
+            cat_text = cat_page.get(get_redirect=True)
+        except pywikibot.NoPage:
+            cat_text = ""
+
+        if re.search(r"{{\s*FMcatUploader.*}}", cat_text):
+            out(
+                "Skipping adding template '%s', page present there"
+                % self.uploader(link=False),
+                color="lightred",
+            )
+
+        else:
+            new_cat_text = cat_text + "\n{{FMcatUploader|username=%s}}\n__HIDDENCAT__" % self.uploader(link=False)
+            self.commit(
+                cat_text,
+                new_cat_text,
+                cat_page,
+                "Creating category for [[User:%s]] %s" % (self.uploader(link=False), why),
+            )
+
+    def makecategorynominator(self):
+        """
+        this creates nominator category for featured media
+        """
+        why = "to have a propper count, and update list at [[Category:Featured media nominated by user name]]   "
+        nomuser = self.nominator(link=False)
+        nomcatpage = "Category:Featured media nominated by %s" % nomuser
+        cat_page = pywikibot.Page(G_Site, nomcatpage)
+        try:
+            cat_text = cat_page.get(get_redirect=True)
+        except pywikibot.NoPage:
+            cat_text = ""
+
+        if re.search(r"{{\s*FMcatNominator.*}}", cat_text):
+            out(
+                "Skipping adding template '%s', page present there"
+                % self.nominator(link=False),
+                color="lightred",
+            )
+        else:
+            new_cat_text = cat_text + "\n{{FMcatNominator|username=%s}}\n__HIDDENCAT__" % self.nominator(link=False)
+            self.commit(
+                cat_text,
+                new_cat_text,
+                cat_page,
+                "Creating category for [[User:%s]] %s" % (self.nominator(link=False), why),
+            )
+
     def addAssessments(self):
         """
         Adds the FM promoted template to a featured
@@ -1211,6 +1269,8 @@ class FMCandidate(Candidate):
             return
         self.addToFeaturedList(re.search(r"(.*?)(?:/|$)", fgallery).group(1))
         self.addToCategorizedFeaturedList(gallery_without_removing_section)
+        self.makecategorynominator()
+        self.makecategoryuploader()
         self.addAssessments()
         self.addToCurrentMonth()
         self.notifyNominator()
