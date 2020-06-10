@@ -197,7 +197,7 @@ class Candidate:
 
     def rulesOfNinthDay(self):
         """Check if any of the rules of the ninth day can be applied"""
-        if self.daysOld() < 5:
+        if self.daysOld() < 9:
             return False
 
         self.countVotes()
@@ -704,7 +704,7 @@ class Candidate:
         media description page.
         This is ==STEP 3== of the parking procedure
         """
-        page = self.getVideoPage()
+        page = self.getFilePage()
         old_text = page.get(get_redirect=True)
 
         AssR = re.compile(r"{{\s*FM[\s_]promoted\s*\|(.*)}}")
