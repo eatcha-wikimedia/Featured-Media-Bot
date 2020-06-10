@@ -197,7 +197,7 @@ class Candidate:
 
     def rulesOfNinthDay(self):
         """Check if any of the rules of the ninth day can be applied"""
-        if self.daysOld() < 9:
+        if self.daysOld() < 5:
             return False
 
         self.countVotes()
