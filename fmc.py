@@ -195,20 +195,19 @@ class Candidate:
         """Page marked with FMX template."""
         return len(re.findall(FmxR, self.page.get(get_redirect=True)))
 
-    def rulesOfFifthDay(self):
-        """Check if any of the rules of the fifth day can be applied."""
-        if self.daysOld() < 5:
+    def rulesOfNinthDay(self):
+        """Check if any of the rules of the ninth day can be applied"""
+        if self.daysOld() < 9:
             return False
 
         self.countVotes()
 
-        # First rule of the fifth day
-        if self._pro <= 1:
+        # First rule of the ninth day
+        if self._pro >= 5:
             return True
-
-        # Second rule of the fifth day
-        if self._pro >= 10 and self._con == 0:
-            return True
+        # Second rule of the ninth day
+        if self._con > 3 and self._pro <= 3:
+            return False
 
     def closePage(self):
         """
@@ -244,9 +243,9 @@ class Candidate:
             return True
 
         # We skip rule of the fifth day if we have several alternatives
-        fifthDay = False if self.mediaCount() > 1 else self.rulesOfFifthDay()
+        ninthDay = False if self.mediaCount() > 1 else self.rulesOfNinthDay()
 
-        if not fifthDay and not self.isDone():
+        if not ninthDay and not self.isDone():
             out('"%s" is still active, ignoring' % self.cutTitle())
             return False
 
@@ -283,7 +282,7 @@ class Candidate:
             new_text,
             self.page,
             self.getCloseCommitComment()
-            + (" (FifthDay=%s)" % ("yes" if fifthDay else "no")),
+            + (" (ninthDay=%s)" % ("yes" if ninthDay else "no")),
         )
 
         return True
