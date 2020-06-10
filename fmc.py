@@ -699,7 +699,7 @@ class Candidate:
         """
 
         why = "to have a propper count, and update list at  [[Category:Featured media uploaded by user name]]"
-        upuser = self.uploader(self.fileName(),link=False)
+        upuser = uploader(self.fileName(),link=False)
         upcatpage = "Category:Featured media by %s" % upuser
         cat_page = pywikibot.Page(G_Site, upcatpage)
         try:
@@ -710,17 +710,17 @@ class Candidate:
         if re.search(r"{{\s*FMcatUploader.*}}", cat_text):
             out(
                 "Skipping adding template '%s', page present there"
-                % self.uploader(link=False),
+                % uploader(self.fileName(),link=False),
                 color="lightred",
             )
 
         else:
-            new_cat_text = cat_text + "\n{{FMcatUploader|username=%s}}\n__HIDDENCAT__" % self.uploader(link=False)
+            new_cat_text = cat_text + "\n{{FMcatUploader|username=%s}}\n__HIDDENCAT__" % uploader(self.fileName(),link=False)
             self.commit(
                 cat_text,
                 new_cat_text,
                 cat_page,
-                "Creating category for [[User:%s]] %s" % (self.uploader(link=False), why),
+                "Creating category for [[User:%s]] %s" % (uploader(self.fileName(), link=False), why),
             )
 
     def makecategorynominator(self):
