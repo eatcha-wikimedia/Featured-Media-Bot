@@ -22,7 +22,7 @@ It adds the following commandline arguments:
 -match pattern    Only operate on candidates matching this pattern
 """
 
-import pywikibot, re, datetime, sys, signal
+import pywikibot, re, sys, signal
 
 # Imports needed for threading
 import threading, time
@@ -32,6 +32,8 @@ from pywikibot import config
 # dependency can be installed using "easy_install tendo"
 # from tendo import singleton
 
+from datetime import datetime, timedelta
+today = datetime.utcnow()
 
 class NotImplementedException(Exception):
 
@@ -332,16 +334,13 @@ class Candidate:
 
         if not history:
             out(
-                "Could not retrieve history for '%s', returning now()"
+                "Could not retrieve history for '%s', returning utcnow()"
                 % self.page.title()
             )
-            return datetime.datetime.now()
+            return today
 
         for data in history:
             self._creationTime = (data['timestamp'])
-
-        # print "C:" + self._creationTime.isoformat()
-        # print "N:" + datetime.datetime.utcnow().isoformat()
         return self._creationTime
 
     def statusString(self):
@@ -360,7 +359,7 @@ class Candidate:
         if self._daysOld != -1:
             return self._daysOld
 
-        delta = datetime.datetime.utcnow() - self.creationTime()
+        delta = today - self.creationTime()
         self._daysOld = delta.days
         return self._daysOld
 
@@ -374,13 +373,13 @@ class Candidate:
             return self._daysSinceLastEdit
 
         try:
-            lastEdit = datetime.datetime.strptime(
+            lastEdit = datetime.strptime(
                 str(self.page.editTime()), "%Y-%m-%dT%H:%M:%SZ"
             )
         except:
             return -1
 
-        delta = datetime.datetime.utcnow() - lastEdit
+        delta = today - lastEdit
         self._daysSinceLastEdit = delta.days
         return self._daysSinceLastEdit
 
@@ -829,8 +828,7 @@ class Candidate:
                     wo = m.group(2)
                     wn = m.group(3)
 
-            today = datetime.date.today()
-            monthpage = "Commons:Featured_media/chronological/%s %s" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
+            monthpage = "Commons:Featured_media/chronological/%s %s" % (today.strftime("%B"), today.year,)
             page = pywikibot.Page(G_Site, monthpage)
             try:
                 old_text = page.get(get_redirect=True)
@@ -859,7 +857,7 @@ class Candidate:
             # TODO: We lack a good way to find the creator, so it is left out at the moment
 
             if count ==1:
-                old_text = "{{subst:FMArchiveChrono}}\n== %s %s ==\n<gallery>\n</gallery>" % (datetime.datetime.utcnow().strftime("%B"), today.year,)
+                old_text = "{{subst:FMArchiveChrono}}\n== %s %s ==\n<gallery>\n</gallery>" % (today.strftime("%B"), today.year,)
             else:pass
 
             if self.isSet():
@@ -1034,6 +1032,65 @@ class Candidate:
                 )
 
 
+
+############################  MOTD implemented  ################################
+
+
+    def getMotdDesc(self):
+        cand_page = pywikibot.Page(G_Site, self.page.title())
+        cand_page_text = cand_page.get()
+        result = re.search('{{Candidatedescription}}(.*)', cand_page_text)
+        return result.group(1)
+
+    def find_empty_motd_date(self):
+        informatdate = lambda num : (datetime.now()+timedelta(num)).strftime('%Y-%m-%d')
+        for num in range(90):
+            motd_page_name = 'Template:Motd/%s' % informatdate(num)
+            if not pywikibot.Page(SITE, motd_page_name).exists():
+                empty_slot_title = motd_page_name
+                en_lang = 'Template:Motd/%s_(en)' % informatdate(num)
+                DateForTemplateTag = (datetime.now()+timedelta(num)).strftime('%Y|%m|%d')
+                break
+        return empty_slot_title, en_lang, DateForTemplateTag
+    
+    def createMotdPage(self):
+        file_name = self.fileName()
+        file_page_text = pywikibot.Page(SITE, file_name).get()
+        if re.search(r"{{\s*?[Mm]edia[_\s]of[_\s]the[_\s]day", file_page_text):
+            return
+        else:
+            empty_slot_title, en_lang, DateForTemplateTag = find_empty_motd_date()
+            why = "Adding promoted [[Commons:Featured media|Featured media]] as MOTD."
+            page = pywikibot.Page(SITE, empty_slot_title)
+            enMotdDescpage = pywikibot.Page(SITE, en_lang)
+            
+            fileWithoutPrefix = file_name.replace('File:', '')
+            
+            new_text = "{{Motd filename|%s|%s}}" % ( fileWithoutPrefix, DateForTemplateTag)
+            self.commit(
+                "",
+                new_text,
+                page,
+                "Creating MOTD page for [[%s]], %s" % (self.NewFileNameIfMoved(), why),
+            )
+            enMotdDescnew_text = "{{Motd description|%s|en|%s}}" % ( self.getMotdDesc(), self.formatMotdTemplateTag() )
+            self.commit(
+                enMotdDesctext,
+                enMotdDescnew_text,
+                enMotdDescpage,
+                "For MOTD [[%s]], %s" % (file_name, "English description added"),
+            )
+                
+            
+            
+            
+            print(empty_slot_title, en_lang, DateForTemplateTag)
+
+########################### MOTD END ##################################
+
+
+
+
     def moveToLog(self, reason=None):
         """
         Remove this candidate from the current list
@@ -1046,8 +1103,8 @@ class Candidate:
 
         # Add to log
         # (Note FIXME, we must probably create this page if it does not exist)
-        today = datetime.date.today()
-        current_month = datetime.datetime.utcnow().strftime("%B")
+
+        current_month = today.strftime("%B")
         log_link = "Commons:Featured media candidates/Log/%s %s" % (
             current_month,
             today.year,
@@ -1329,7 +1386,7 @@ class DelistCandidate(Candidate):
                 if ref.title().startswith("Commons:Featured media/chronological"):
                     out("Adding delist note to %s" % ref.title())
                     old_text = ref.get(get_redirect=True)
-                    now = datetime.datetime.utcnow()
+                    now = today
                     new_text = re.sub(
                         r"(([Ff]ile|[Ii]mage):%s.*)\n"
                         % wikipattern(self.cleanTitle(keepExtension=True)),
@@ -1391,7 +1448,7 @@ def out(text, newline=True, date=False, color=None):
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
     dstr = (
-        "%s: " % datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        "%s: " % today.strftime("%Y-%m-%d %H:%M:%S")
         if date and not G_LogNoTime
         else ""
     )
