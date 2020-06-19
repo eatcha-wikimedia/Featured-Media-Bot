@@ -1055,7 +1055,7 @@ class Candidate:
         if re.search(r"{{\s*?[Mm]edia[_\s]of[_\s]the[_\s]day", file_page_text):
             return
         else:
-            empty_slot_title, en_lang, DateForTemplateTag = find_empty_motd_date()
+            empty_slot_title, en_lang, DateForTemplateTag = self.find_empty_motd_date()
             why = "Adding promoted [[Commons:Featured media|Featured media]] as MOTD."
             page = pywikibot.Page(SITE, empty_slot_title)
             enMotdDescpage = pywikibot.Page(SITE, en_lang)
