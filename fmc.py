@@ -1069,7 +1069,7 @@ class Candidate:
                 page,
                 "Creating MOTD page for [[%s]], %s" % (file_name, why),
             )
-            enMotdDescnew_text = "{{Motd description|%s|en|%s}}" % ( self.getMotdDesc(), self.formatMotdTemplateTag() )
+            enMotdDescnew_text = "{{Motd description|%s|en|%s}}" % ( self.getMotdDesc(), DateForTemplateTag )
             self.commit(
                 enMotdDesctext,
                 enMotdDescnew_text,
