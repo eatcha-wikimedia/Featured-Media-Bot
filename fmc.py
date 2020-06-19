@@ -1071,7 +1071,7 @@ class Candidate:
             )
             enMotdDescnew_text = "{{Motd description|%s|en|%s}}" % ( self.getMotdDesc(), DateForTemplateTag )
             self.commit(
-                enMotdDesctext,
+                "",
                 enMotdDescnew_text,
                 enMotdDescpage,
                 "For MOTD [[%s]], %s" % (file_name, "English description added"),
