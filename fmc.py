@@ -556,13 +556,13 @@ class Candidate:
             "(%s.*?)([Ff]ile|[Ii]mage)" % candPrefix, r"\2", self.page.title()
         )
 
-        if not pywikibot.Page(G_Site, self._fileName).exists():
+        if not pywikibot.Page(SITE, self._fileName).exists():
             match = re.search(FilesR, self.page.get(get_redirect=True))
             if match:
                 self._fileName = match.group(1)
 
         #Check if file was moved after nomination
-        page = pywikibot.Page(G_Site, self._fileName)
+        page = pywikibot.Page(SITE, self._fileName)
         if page.isRedirectPage():
             self._fileName = page.getRedirectTarget().title()
 
@@ -584,7 +584,7 @@ class Candidate:
             file = self.fileName()
 
         listpage = "Commons:Featured media, list"
-        page = pywikibot.Page(G_Site, listpage)
+        page = pywikibot.Page(SITE, listpage)
         old_text = page.get(get_redirect=True)
 
         # First check if we are already on the page,
@@ -632,7 +632,7 @@ class Candidate:
             files.append(self.fileName())
         for file in files:
             gallery_full_path = "Commons:Featured media/" + re.sub(r"#.*", "", gallery)
-            page = pywikibot.Page(G_Site, gallery_full_path)
+            page = pywikibot.Page(SITE, gallery_full_path)
             old_text = page.get(get_redirect=True)
             section_regex = r"#(.*)"
             search_section = re.search(section_regex, gallery)
@@ -690,7 +690,7 @@ class Candidate:
 
     def getFilePage(self):
         """Get the media page itself."""
-        return pywikibot.Page(G_Site, self.fileName())
+        return pywikibot.Page(SITE, self.fileName())
 
     def makecategoryuploader(self):
         """
@@ -700,7 +700,7 @@ class Candidate:
         why = "to have a propper count, and update list at  [[Category:Featured media uploaded by user name]]"
         upuser = uploader(self.fileName(),link=False)
         upcatpage = "Category:Featured media by %s" % upuser
-        cat_page = pywikibot.Page(G_Site, upcatpage)
+        cat_page = pywikibot.Page(SITE, upcatpage)
         try:
             cat_text = cat_page.get(get_redirect=True)
         except pywikibot.NoPage:
@@ -729,7 +729,7 @@ class Candidate:
         why = "to have a propper count, and update list at [[Category:Featured media nominated by user name]]   "
         nomuser = self.nominator(link=False)
         nomcatpage = "Category:Featured media nominated by %s" % nomuser
-        cat_page = pywikibot.Page(G_Site, nomcatpage)
+        cat_page = pywikibot.Page(SITE, nomcatpage)
         try:
             cat_text = cat_page.get(get_redirect=True)
         except pywikibot.NoPage:
@@ -829,7 +829,7 @@ class Candidate:
                     wn = m.group(3)
 
             monthpage = "Commons:Featured_media/chronological/%s %s" % (today.strftime("%B"), today.year,)
-            page = pywikibot.Page(G_Site, monthpage)
+            page = pywikibot.Page(SITE, monthpage)
             try:
                 old_text = page.get(get_redirect=True)
             except pywikibot.NoPage:
@@ -891,7 +891,7 @@ class Candidate:
         This is ==STEP 5== of the parking procedure
         """
         talk_link = "User_talk:%s" % self.nominator(link=False)
-        talk_page = pywikibot.Page(G_Site, talk_link)
+        talk_page = pywikibot.Page(SITE, talk_link)
 
         try:
             old_text = talk_page.get(get_redirect=True)
@@ -981,7 +981,7 @@ class Candidate:
                 continue
 
             talk_link = "User_talk:%s" % uploader(file, link=False)
-            talk_page = pywikibot.Page(G_Site, talk_link)
+            talk_page = pywikibot.Page(SITE, talk_link)
             try:
                 old_text = talk_page.get(get_redirect=True)
             except pywikibot.NoPage:
@@ -1033,7 +1033,7 @@ class Candidate:
 
 
     def getMotdDesc(self):
-        cand_page = pywikibot.Page(G_Site, self.page.title())
+        cand_page = pywikibot.Page(SITE, self.page.title())
         cand_page_text = cand_page.get()
         result = re.search('{{Candidatedescription}}(.*)', cand_page_text)
         return result.group(1)
@@ -1101,7 +1101,7 @@ class Candidate:
             current_month,
             today.year,
         )
-        log_page = pywikibot.Page(G_Site, log_link)
+        log_page = pywikibot.Page(SITE, log_link)
 
         # If the page does not exist we just create it ( put does that automatically )
         try:
@@ -1125,7 +1125,7 @@ class Candidate:
             )
 
         # Remove from current list
-        candidate_page = pywikibot.Page(G_Site, self._listPageName)
+        candidate_page = pywikibot.Page(SITE, self._listPageName)
         old_cand_text = candidate_page.get(get_redirect=True)
         new_cand_text = re.sub(
             r"{{\s*%s\s*}}.*?\n?" % wikipattern(self.page.title()), "", old_cand_text
@@ -1186,7 +1186,7 @@ class Candidate:
             return
 
         # Check if the media page exist, if not we ignore this candidate
-        if not pywikibot.Page(G_Site, self.fileName()).exists():
+        if not pywikibot.Page(SITE, self.fileName()).exists():
             out("%s: (WARNING: ignoring, can't find media page)" % self.cutTitle())
             return
 
@@ -1304,7 +1304,7 @@ class FMCandidate(Candidate):
         # Check if we have an alternative for a multi media
         if self.mediaCount() > 1:
             if len(results) > 5 and len(results[5]):
-                if not pywikibot.Page(G_Site, results[5]).exists():
+                if not pywikibot.Page(SITE, results[5]).exists():
                     out("%s: (ignoring, specified alternative not found)" % results[5])
                 else:
                     self._alternative = results[5]
@@ -1450,7 +1450,7 @@ def out(text, newline=True, date=False, color=None):
 
 def findCandidates(page_url, delist):
     """Finds all candidates on the main FMC page."""
-    page = pywikibot.Page(G_Site, page_url)
+    page = pywikibot.Page(SITE, page_url)
     candidates = []
     templates = page.templates()
     for template in templates:
@@ -1475,8 +1475,8 @@ def checkCandidates(check, page, delist):
     @param page   A page containing all candidates
     @param delist Boolean, telling whether this is delistings of fmcs
     """
-    if not G_Site.logged_in():
-        G_Site.login()
+    if not SITE.logged_in():
+        SITE.login()
 
     candidates = findCandidates(page, delist)
 
@@ -1536,7 +1536,7 @@ def strip_tag(text, tag):
 
 def uploader(file, link=True):
     """Return the link to the user that uploaded the nominated media."""
-    page = pywikibot.Page(G_Site, file)
+    page = pywikibot.Page(SITE, file)
     history = page.revisions(reverse=True, total=1)
     for data in history:
         username = (data.user)
@@ -1800,7 +1800,7 @@ def main(*args):
     global G_Threads
     global G_LogNoTime
     global G_MatchPattern
-    global G_Site
+    global SITE
 
     # Will sys.exit(-1) if another instance is running
 #     me = singleton.SingleInstance()
@@ -1859,7 +1859,7 @@ def main(*args):
         sys.exit(0)
 
     args = pywikibot.handle_args(*args)
-    G_Site = pywikibot.Site()
+    SITE = pywikibot.Site()
 
     # Abort on unknown arguments
     for arg in args:
