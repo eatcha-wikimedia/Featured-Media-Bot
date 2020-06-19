@@ -1067,7 +1067,7 @@ class Candidate:
                 "",
                 new_text,
                 page,
-                "Creating MOTD page for [[%s]], %s" % (self.NewFileNameIfMoved(), why),
+                "Creating MOTD page for [[%s]], %s" % (self.filename(), why),
             )
             enMotdDescnew_text = "{{Motd description|%s|en|%s}}" % ( self.getMotdDesc(), self.formatMotdTemplateTag() )
             self.commit(
