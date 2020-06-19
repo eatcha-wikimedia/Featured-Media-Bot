@@ -1032,10 +1032,6 @@ class Candidate:
                 )
 
 
-
-############################  MOTD implemented  ################################
-
-
     def getMotdDesc(self):
         cand_page = pywikibot.Page(G_Site, self.page.title())
         cand_page_text = cand_page.get()
@@ -1085,10 +1081,6 @@ class Candidate:
             
             
             print(empty_slot_title, en_lang, DateForTemplateTag)
-
-########################### MOTD END ##################################
-
-
 
 
     def moveToLog(self, reason=None):
@@ -1332,6 +1324,7 @@ class FMCandidate(Candidate):
         self.addToCurrentMonth()
         self.notifyNominator()
         self.notifyUploader()
+        self.createMotdPage()
         self.moveToLog(self._proString)
 
 
